@@ -7,6 +7,7 @@ import { Dashboard } from './pages/Dashboard';
 import { CourseCatalog } from './pages/CourseCatalog';
 import { CourseDetail } from './pages/CourseDetail';
 import { LessonPlayer } from './pages/LessonPlayer';
+import { Exercise } from './pages/Exercise';
 
 function App() {
   return (
@@ -44,6 +45,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <LessonPlayer />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/exercise/:exerciseId"
+            element={
+              <ProtectedRoute>
+                <Exercise />
               </ProtectedRoute>
             }
           />

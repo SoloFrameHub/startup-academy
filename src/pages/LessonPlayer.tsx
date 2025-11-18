@@ -7,6 +7,59 @@ import {
   Play, FileText, Code, Clock, Target
 } from 'lucide-react';
 
+function GetExerciseButton({ lessonId }: { lessonId: string }) {
+  const [exerciseId, setExerciseId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadExercise();
+  }, [lessonId]);
+
+  const loadExercise = async () => {
+    try {
+      const { data } = await supabase
+        .from('exercise_instances')
+        .select('id')
+        .eq('lesson_id', lessonId)
+        .maybeSingle();
+
+      if (data) {
+        setExerciseId(data.id);
+      }
+    } catch (error) {
+      console.error('Error loading exercise:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="inline-flex items-center px-6 py-3 bg-slate-200 text-slate-400 rounded-lg">
+        Loading...
+      </div>
+    );
+  }
+
+  if (!exerciseId) {
+    return (
+      <div className="text-sm text-slate-500">
+        Exercise not yet configured for this lesson
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      to={`/exercise/${exerciseId}`}
+      className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition"
+    >
+      Start Exercise
+      <ChevronRight className="ml-2 h-5 w-5" />
+    </Link>
+  );
+}
+
 interface Lesson {
   id: string;
   course_id: string;
@@ -192,14 +245,8 @@ export function LessonPlayer() {
                   <p className="text-sm text-slate-600">Hands-on practice with AI coaching</p>
                 </div>
               </div>
-              <p className="text-slate-700 mb-4">{lesson.content?.prompt}</p>
-              <Link
-                to={`/exercise/${lesson.id}`}
-                className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition"
-              >
-                Start Exercise
-                <ChevronRight className="ml-2 h-5 w-5" />
-              </Link>
+              <p className="text-slate-700 mb-4">{lesson.content?.prompt || 'Complete this interactive exercise to deepen your understanding.'}</p>
+              <GetExerciseButton lessonId={lesson.id} />
             </div>
           </div>
         );
