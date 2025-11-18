@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { useProgress } from '../hooks/useProgress';
 import {
   BookOpen, ChevronLeft, ChevronRight, CheckCircle,
   Play, FileText, Code, Clock, Target
@@ -82,7 +83,7 @@ export function LessonPlayer() {
   const { courseSlug, lessonOrder } = useParams<{ courseSlug: string; lessonOrder: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { markLessonComplete, updateCurrentLesson, getCourseProgress } = require('../hooks/useProgress').useProgress();
+  const { markLessonComplete, updateCurrentLesson, getCourseProgress } = useProgress();
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [course, setCourse] = useState<Course | null>(null);
   const [allLessons, setAllLessons] = useState<Lesson[]>([]);
