@@ -4,6 +4,9 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { Login } from './pages/Login';
 import { Signup } from './pages/Signup';
 import { Dashboard } from './pages/Dashboard';
+import { CourseCatalog } from './pages/CourseCatalog';
+import { CourseDetail } from './pages/CourseDetail';
+import { LessonPlayer } from './pages/LessonPlayer';
 
 function App() {
   return (
@@ -17,6 +20,30 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/courses"
+            element={
+              <ProtectedRoute>
+                <CourseCatalog />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/courses/:slug"
+            element={
+              <ProtectedRoute>
+                <CourseDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/learn/:courseSlug/:lessonOrder"
+            element={
+              <ProtectedRoute>
+                <LessonPlayer />
               </ProtectedRoute>
             }
           />

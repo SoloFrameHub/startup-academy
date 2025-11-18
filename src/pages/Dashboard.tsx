@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { BookOpen, TrendingUp, Award, Flame } from 'lucide-react';
@@ -53,9 +54,19 @@ export function Dashboard() {
       <nav className="bg-white shadow-sm border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <BookOpen className="h-8 w-8 text-blue-600" />
-              <span className="ml-2 text-xl font-bold text-slate-900">Startup Academy</span>
+            <div className="flex items-center gap-8">
+              <Link to="/dashboard" className="flex items-center">
+                <BookOpen className="h-8 w-8 text-blue-600" />
+                <span className="ml-2 text-xl font-bold text-slate-900">Startup Academy</span>
+              </Link>
+              <div className="hidden md:flex items-center gap-6">
+                <Link to="/dashboard" className="text-sm font-medium text-slate-700 hover:text-slate-900">
+                  Dashboard
+                </Link>
+                <Link to="/courses" className="text-sm font-medium text-slate-700 hover:text-slate-900">
+                  Courses
+                </Link>
+              </div>
             </div>
             <button
               onClick={signOut}
@@ -126,9 +137,18 @@ export function Dashboard() {
           <div className="space-y-4">
             <div className="p-4 bg-blue-50 border border-blue-100 rounded-lg">
               <h3 className="font-semibold text-slate-900 mb-2">Step 1: Browse Courses</h3>
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-slate-600 mb-3">
                 Explore our course catalog to find courses that match your startup stage and goals.
               </p>
+              <Link
+                to="/courses"
+                className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-700"
+              >
+                Browse Courses
+                <svg className="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
             </div>
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg">
               <h3 className="font-semibold text-slate-900 mb-2">Step 2: Enroll and Learn</h3>
