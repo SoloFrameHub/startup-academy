@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import { BookOpen, TrendingUp, Award, Flame } from 'lucide-react';
+import { useProgress } from '../hooks/useProgress';
+import { BookOpen, TrendingUp, Award, Flame, Play, CheckCircle } from 'lucide-react';
 
 interface UserProfile {
   display_name: string | null;
@@ -13,14 +14,27 @@ interface UserProfile {
   enrolled_courses: string[];
 }
 
+interface EnrolledCourse {
+  id: string;
+  title: string;
+  slug: string;
+  progress?: {
+    completion_percentage: number;
+    current_lesson_id: string | null;
+  };
+}
+
 export function Dashboard() {
   const { user, signOut } = useAuth();
+  const { stats, loading: statsLoading } = useProgress();
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (user) {
       loadProfile();
+      loadEnrolledCourses();
     }
   }, [user]);
 
@@ -38,6 +52,32 @@ export function Dashboard() {
       console.error('Error loading profile:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadEnrolledCourses = async () => {
+    try {
+      const { data: progressData } = await supabase
+        .from('user_progress')
+        .select('course_id, completion_percentage, current_lesson_id')
+        .eq('user_id', user?.id);
+
+      if (progressData && progressData.length > 0) {
+        const courseIds = progressData.map(p => p.course_id);
+        const { data: courses } = await supabase
+          .from('courses')
+          .select('id, title, slug')
+          .in('id', courseIds);
+
+        const coursesWithProgress = courses?.map(course => ({
+          ...course,
+          progress: progressData.find(p => p.course_id === course.id)
+        })) || [];
+
+        setEnrolledCourses(coursesWithProgress);
+      }
+    } catch (error) {
+      console.error('Error loading enrolled courses:', error);
     }
   };
 
@@ -93,7 +133,7 @@ export function Dashboard() {
                 <Flame className="h-6 w-6 text-orange-600" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-slate-900 mb-1">{profile?.current_streak || 0} days</div>
+            <div className="text-2xl font-bold text-slate-900 mb-1">{stats?.current_streak || 0} days</div>
             <div className="text-sm text-slate-600">Current Streak</div>
           </div>
 
@@ -103,8 +143,8 @@ export function Dashboard() {
                 <BookOpen className="h-6 w-6 text-blue-600" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-slate-900 mb-1">{profile?.enrolled_courses?.length || 0}</div>
-            <div className="text-sm text-slate-600">Enrolled Courses</div>
+            <div className="text-2xl font-bold text-slate-900 mb-1">{stats?.courses_completed || 0}</div>
+            <div className="text-sm text-slate-600">Courses Completed</div>
           </div>
 
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
@@ -113,7 +153,7 @@ export function Dashboard() {
                 <Award className="h-6 w-6 text-green-600" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-slate-900 mb-1">{profile?.total_points || 0}</div>
+            <div className="text-2xl font-bold text-slate-900 mb-1">{stats?.total_points || 0}</div>
             <div className="text-sm text-slate-600">Total Points</div>
           </div>
 
@@ -123,10 +163,52 @@ export function Dashboard() {
                 <TrendingUp className="h-6 w-6 text-slate-600" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-slate-900 mb-1">{profile?.current_level || 'Aspiring Founder'}</div>
+            <div className="text-2xl font-bold text-slate-900 mb-1">Level {stats?.current_level || 1}</div>
             <div className="text-sm text-slate-600">Current Level</div>
           </div>
         </div>
+
+        {enrolledCourses.length > 0 && (
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 mb-8">
+            <h2 className="text-xl font-bold text-slate-900 mb-6">Your Courses</h2>
+            <div className="space-y-4">
+              {enrolledCourses.map((course) => (
+                <div key={course.id} className="p-4 border border-slate-200 rounded-lg hover:border-blue-300 transition">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-slate-900">{course.title}</h3>
+                    <span className="text-sm font-medium text-blue-600">
+                      {course.progress?.completion_percentage || 0}%
+                    </span>
+                  </div>
+                  <div className="mb-4">
+                    <div className="w-full bg-slate-200 rounded-full h-2">
+                      <div
+                        className="bg-blue-600 h-2 rounded-full transition-all"
+                        style={{ width: `${course.progress?.completion_percentage || 0}%` }}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {course.progress?.completion_percentage === 100 ? (
+                      <div className="flex items-center gap-2 text-sm text-green-600">
+                        <CheckCircle className="h-4 w-4" />
+                        <span>Completed</span>
+                      </div>
+                    ) : (
+                      <Link
+                        to={`/courses/${course.slug}`}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+                      >
+                        <Play className="h-4 w-4" />
+                        Continue Learning
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
           <h2 className="text-xl font-bold text-slate-900 mb-4">Getting Started</h2>

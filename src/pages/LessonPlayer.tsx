@@ -82,11 +82,13 @@ export function LessonPlayer() {
   const { courseSlug, lessonOrder } = useParams<{ courseSlug: string; lessonOrder: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { markLessonComplete, updateCurrentLesson, getCourseProgress } = require('../hooks/useProgress').useProgress();
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [course, setCourse] = useState<Course | null>(null);
   const [allLessons, setAllLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [completedLessons, setCompletedLessons] = useState<string[]>([]);
 
   useEffect(() => {
     if (courseSlug && lessonOrder) {
@@ -129,6 +131,13 @@ export function LessonPlayer() {
       }
 
       setLesson(currentLesson);
+
+      updateCurrentLesson(courseData.id, currentLesson.id);
+
+      const progress = await getCourseProgress(courseData.id);
+      if (progress) {
+        setCompletedLessons(progress.completed_lessons || []);
+      }
     } catch (error) {
       console.error('Error loading lesson:', error);
     } finally {
@@ -157,26 +166,14 @@ export function LessonPlayer() {
   };
 
   const handleMarkComplete = async () => {
-    if (!lesson || !user) return;
+    if (!lesson || !course) return;
 
     try {
-      const { data: userData } = await supabase
-        .from('users')
-        .select('completed_lessons')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      if (userData) {
-        const completedLessons = userData.completed_lessons || [];
-        if (!completedLessons.includes(lesson.id)) {
-          await supabase
-            .from('users')
-            .update({
-              completed_lessons: [...completedLessons, lesson.id]
-            })
-            .eq('id', user.id);
-        }
-      }
+      await markLessonComplete(course.id, lesson.id);
+      setCompletedLessons(prev => {
+        if (prev.includes(lesson.id)) return prev;
+        return [...prev, lesson.id];
+      });
 
       handleNextLesson();
     } catch (error) {
@@ -319,6 +316,9 @@ export function LessonPlayer() {
                   <div className="font-medium text-sm truncate">{l.title}</div>
                   <div className="text-xs text-slate-500">{l.estimated_minutes} min</div>
                 </div>
+                {completedLessons.includes(l.id) && (
+                  <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
+                )}
               </Link>
             ))}
           </div>
