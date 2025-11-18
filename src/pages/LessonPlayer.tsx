@@ -198,8 +198,29 @@ export function LessonPlayer() {
   const renderContent = () => {
     if (!lesson) return null;
 
+    const markdownToHtml = (markdown: string) => {
+      return markdown
+        .replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold text-slate-900 mt-6 mb-3">$1</h3>')
+        .replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold text-slate-900 mt-8 mb-4">$1</h2>')
+        .replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold text-slate-900 mt-8 mb-4">$1</h1>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/^- (.*$)/gim, '<li class="ml-6">$1</li>')
+        .replace(/^> (.*$)/gim, '<blockquote class="border-l-4 border-blue-500 pl-4 italic text-slate-600 my-4">$1</blockquote>')
+        .replace(/\n\n/g, '</p><p class="mb-4">')
+        .replace(/^(?!<[h|l|b])(.*$)/gim, '<p class="mb-4">$1</p>');
+    };
+
     switch (lesson.content_type) {
       case 'video':
+        if (lesson.content?.markdown) {
+          return (
+            <div
+              className="prose prose-slate max-w-none"
+              dangerouslySetInnerHTML={{ __html: markdownToHtml(lesson.content.markdown) }}
+            />
+          );
+        }
         return (
           <div className="space-y-6">
             <div className="aspect-video bg-slate-900 rounded-lg flex items-center justify-center">
@@ -223,6 +244,14 @@ export function LessonPlayer() {
         );
 
       case 'article':
+        if (lesson.content?.markdown) {
+          return (
+            <div
+              className="prose prose-slate max-w-none"
+              dangerouslySetInnerHTML={{ __html: markdownToHtml(lesson.content.markdown) }}
+            />
+          );
+        }
         return (
           <div
             className="prose prose-slate max-w-none"

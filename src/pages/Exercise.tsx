@@ -206,38 +206,41 @@ export function Exercise() {
   };
 
   const validateSubmission = () => {
-    if (!template) return false;
+    if (!template || !responseData) return false;
 
     const config = template.template_config;
 
     if (config.sections) {
       return config.sections.every((section: any) => {
         const value = responseData[section.id];
+        if (!value) return false;
+
         if (section.inputType === 'multiline') {
-          return value && value.length > 0 && value.some((item: string) => item.trim());
+          return Array.isArray(value) && value.length > 0 && value.some((item: string) => item && item.trim().length > 0);
         }
-        return value && value.trim();
+        return typeof value === 'string' && value.trim().length > 0;
       });
     }
 
     if (config.quadrants) {
       return config.quadrants.every((quadrant: any) => {
         const value = responseData[quadrant.id];
-        return value && value.length > 0 && value.some((item: string) => item.trim());
+        return Array.isArray(value) && value.length > 0 && value.some((item: string) => item && item.trim().length > 0);
       });
     }
 
     if (config.steps) {
       return config.steps.every((step: any) => {
         const value = responseData[step.id];
+        if (!Array.isArray(value)) return false;
         if (step.minItems) {
-          return value && value.length >= step.minItems;
+          return value.length >= step.minItems && value.every((item: string) => item && item.trim().length > 0);
         }
-        return value && value.length > 0;
+        return value.length > 0 && value.every((item: string) => item && item.trim().length > 0);
       });
     }
 
-    return true;
+    return Object.keys(responseData).length > 0;
   };
 
   if (loading) {
