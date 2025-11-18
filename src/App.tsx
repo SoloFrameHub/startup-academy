@@ -8,6 +8,7 @@ import { CourseCatalog } from './pages/CourseCatalog';
 import { CourseDetail } from './pages/CourseDetail';
 import { LessonPlayer } from './pages/LessonPlayer';
 import { Exercise } from './pages/Exercise';
+import { Achievements } from './pages/Achievements';
 
 function App() {
   return (
@@ -53,6 +54,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Exercise />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/achievements"
+            element={
+              <ProtectedRoute>
+                <Achievements />
               </ProtectedRoute>
             }
           />
