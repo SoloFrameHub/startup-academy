@@ -92,12 +92,21 @@ export function CourseDetail() {
     if (!user || !course) return;
 
     try {
-      await supabase
+      const { data: userData } = await supabase
         .from('users')
-        .update({
-          enrolled_courses: supabase.raw(`array_append(enrolled_courses, '${course.id}')`)
-        })
-        .eq('id', user.id);
+        .select('enrolled_courses')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      const currentCourses = userData?.enrolled_courses || [];
+      if (!currentCourses.includes(course.id)) {
+        await supabase
+          .from('users')
+          .update({
+            enrolled_courses: [...currentCourses, course.id]
+          })
+          .eq('id', user.id);
+      }
 
       await supabase
         .from('user_progress')
@@ -111,6 +120,7 @@ export function CourseDetail() {
       navigate(`/learn/${course.slug}/1`);
     } catch (error) {
       console.error('Error enrolling:', error);
+      alert('Error enrolling in course. Please try again.');
     }
   };
 
