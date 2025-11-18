@@ -88,8 +88,30 @@ export function CourseDetail() {
     }
   };
 
-  const handleEnroll = () => {
-    navigate(`/checkout/${course?.slug}`);
+  const handleEnroll = async () => {
+    if (!user || !course) return;
+
+    try {
+      await supabase
+        .from('users')
+        .update({
+          enrolled_courses: supabase.raw(`array_append(enrolled_courses, '${course.id}')`)
+        })
+        .eq('id', user.id);
+
+      await supabase
+        .from('user_progress')
+        .insert({
+          user_id: user.id,
+          course_id: course.id
+        });
+
+      setIsEnrolled(true);
+
+      navigate(`/learn/${course.slug}/1`);
+    } catch (error) {
+      console.error('Error enrolling:', error);
+    }
   };
 
   const getContentIcon = (type: string) => {
