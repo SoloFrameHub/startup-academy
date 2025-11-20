@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useProgress } from '../hooks/useProgress';
 import { CaseStudyRenderer } from '../components/CaseStudyRenderer';
+import { SocialListeningTool } from '../components/SocialListeningTool';
 import {
   BookOpen, ChevronLeft, ChevronRight, CheckCircle,
   Play, FileText, Code, Clock, Target
@@ -247,10 +248,13 @@ export function LessonPlayer() {
       case 'article':
         if (lesson.content?.markdown) {
           return (
-            <div
-              className="prose prose-slate max-w-none"
-              dangerouslySetInnerHTML={{ __html: markdownToHtml(lesson.content.markdown) }}
-            />
+            <div className="space-y-8">
+              <div
+                className="prose prose-slate max-w-none"
+                dangerouslySetInnerHTML={{ __html: markdownToHtml(lesson.content.markdown) }}
+              />
+              {lesson.content?.hasAITool && <SocialListeningTool />}
+            </div>
           );
         }
         return (
