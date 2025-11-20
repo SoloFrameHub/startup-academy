@@ -1,17 +1,17 @@
-# SOLOFRAMEHUB ACADEMY SYSTEMS PROMPT
+# Systems Prompt Location
 
-## PROJECT OVERVIEW
+The comprehensive systems prompt for SoloFrameHub Academy is located at:
 
-You are building **SoloFrameHub Academy**, a comprehensive Supabase-based educational platform teaching solo founders and small teams how to build AI-powered bootstrapped businesses through **deep strategic frameworks**, not quick-action checklists. This is a **teaching-first, outcome-focused platform** that prioritizes explanation before application and real business milestones over lesson completion metrics.
+**`/SYSTEMS_PROMPT.md`**
 
-**Core Philosophy**:
-- 70% experiential learning, 20% social/community, 10% formal instruction
-- Strategic depth over execution speed
-- Business outcomes (first customer, first revenue) trump course completion percentages
-- Quality of thinking matters more than rapid execution
-- Soft encouragement, never hard gates
+This file contains:
+- Complete technical architecture
+- Database schema with accountability pods and milestone tracking
+- 70/20/10 learning model (experiential/social/formal)
+- Hybrid community approach (NodeBB + Discord + in-app)
+- Soft encouragement system (no hard gates)
+- Re-engagement automation
+- 14-week implementation roadmap
+- All strategic requirements and design principles
 
-**Target Audience**: Solo founders and small teams (38% of all startups), bootstrappers building to profitability, founders keeping day jobs while building, non-technical founders needing AI fluency, $0-$100K MRR stage companies.
-
-**Market Positioning**: Premium but accessible ($299-$799), AI-native education, cohort-light delivery (self-paced + accountability pods + monthly Q&A), 60%+ target completion rate.
-
+Please refer to that file for all development decisions and feature implementation guidance.
