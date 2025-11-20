@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useProgress } from '../hooks/useProgress';
+import { CaseStudyRenderer } from '../components/CaseStudyRenderer';
 import {
   BookOpen, ChevronLeft, ChevronRight, CheckCircle,
   Play, FileText, Code, Clock, Target
@@ -275,6 +276,16 @@ export function LessonPlayer() {
               <p className="text-slate-700 mb-4">{lesson.content?.prompt || 'Complete this interactive exercise to deepen your understanding.'}</p>
               <GetExerciseButton lessonId={lesson.id} />
             </div>
+          </div>
+        );
+
+      case 'case-study':
+        if (lesson.content) {
+          return <CaseStudyRenderer content={lesson.content} />;
+        }
+        return (
+          <div className="p-6 bg-slate-50 rounded-lg text-center text-slate-600">
+            Case study content not available
           </div>
         );
 

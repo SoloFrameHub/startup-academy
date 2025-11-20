@@ -32,9 +32,10 @@ interface Submission {
   id: string;
   user_id: string;
   exercise_instance_id: string;
-  response_data: any;
-  ai_feedback: any;
-  score: number;
+  user_response: any;
+  ai_evaluation: any;
+  scores: any;
+  status: string;
   submitted_at: string;
 }
 
@@ -95,7 +96,7 @@ export function Exercise() {
 
       if (submissionData) {
         setSubmission(submissionData);
-        setResponseData(submissionData.response_data || {});
+        setResponseData(submissionData.user_response || {});
       }
     } catch (error) {
       console.error('Error loading exercise:', error);
@@ -121,7 +122,7 @@ export function Exercise() {
         await supabase
           .from('submissions')
           .update({
-            response_data: responseData,
+            user_response: responseData,
             updated_at: new Date().toISOString()
           })
           .eq('id', existingDraft.id);
@@ -131,7 +132,7 @@ export function Exercise() {
           .insert({
             user_id: user.id,
             exercise_instance_id: exercise.id,
-            response_data: responseData,
+            user_response: responseData,
             status: 'draft'
           });
       }
@@ -160,7 +161,7 @@ export function Exercise() {
         .insert({
           user_id: user.id,
           exercise_instance_id: exercise.id,
-          response_data: responseData,
+          user_response: responseData,
           status: 'submitted',
           submitted_at: new Date().toISOString()
         })
@@ -186,8 +187,8 @@ export function Exercise() {
         if (result.success) {
           setSubmission(prev => prev ? {
             ...prev,
-            ai_feedback: result.evaluation,
-            score: result.evaluation.overallScore,
+            ai_evaluation: result.evaluation,
+            scores: { overall: result.evaluation.overallScore },
             status: 'evaluated'
           } : null);
           alert(`Exercise evaluated! Score: ${result.evaluation.overallScore}/100`);
@@ -343,15 +344,15 @@ export function Exercise() {
                   <p className="text-sm text-green-700">
                     Submitted on {new Date(submission.submitted_at).toLocaleString()}
                   </p>
-                  {submission.score && (
+                  {submission.scores?.overall && (
                     <p className="text-sm text-green-700 mt-1">
-                      Score: {submission.score}/100
+                      Score: {submission.scores.overall}/100
                     </p>
                   )}
                 </div>
               </div>
 
-              {submission.ai_feedback && (
+              {submission.ai_evaluation && (
                 <div className="bg-white border border-slate-200 rounded-lg p-6 mb-6">
                   <h2 className="text-xl font-bold text-slate-900 mb-4">AI Evaluation Feedback</h2>
 
@@ -359,16 +360,16 @@ export function Exercise() {
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-semibold text-slate-900">Overall Score</span>
                       <span className={`text-2xl font-bold ${
-                        submission.ai_feedback.overallScore >= 80 ? 'text-green-600' :
-                        submission.ai_feedback.overallScore >= 70 ? 'text-blue-600' :
+                        submission.ai_evaluation.overallScore >= 80 ? 'text-green-600' :
+                        submission.ai_evaluation.overallScore >= 70 ? 'text-blue-600' :
                         'text-amber-600'
                       }`}>
-                        {submission.ai_feedback.overallScore}/100
+                        {submission.ai_evaluation.overallScore}/100
                       </span>
                     </div>
-                    {submission.ai_feedback.criteriaScores && (
+                    {submission.ai_evaluation.criteriaScores && (
                       <div className="space-y-2">
-                        {Object.entries(submission.ai_feedback.criteriaScores).map(([criterion, score]) => (
+                        {Object.entries(submission.ai_evaluation.criteriaScores).map(([criterion, score]) => (
                           <div key={criterion} className="flex items-center justify-between text-sm">
                             <span className="text-slate-600">{criterion}</span>
                             <span className="font-medium text-slate-900">{score as number}/100</span>
@@ -380,17 +381,17 @@ export function Exercise() {
 
                   <div className="mb-6">
                     <h3 className="font-semibold text-slate-900 mb-2">Detailed Feedback</h3>
-                    <p className="text-slate-700 whitespace-pre-wrap">{submission.ai_feedback.feedback}</p>
+                    <p className="text-slate-700 whitespace-pre-wrap">{submission.ai_evaluation.feedback}</p>
                   </div>
 
-                  {submission.ai_feedback.strengths && submission.ai_feedback.strengths.length > 0 && (
+                  {submission.ai_evaluation.strengths && submission.ai_evaluation.strengths.length > 0 && (
                     <div className="mb-6">
                       <h3 className="font-semibold text-slate-900 mb-2 flex items-center gap-2">
                         <CheckCircle className="h-5 w-5 text-green-600" />
                         Strengths
                       </h3>
                       <ul className="space-y-2">
-                        {submission.ai_feedback.strengths.map((strength: string, index: number) => (
+                        {submission.ai_evaluation.strengths.map((strength: string, index: number) => (
                           <li key={index} className="flex items-start gap-2">
                             <span className="text-green-600 mt-1">•</span>
                             <span className="text-slate-700">{strength}</span>
@@ -400,14 +401,14 @@ export function Exercise() {
                     </div>
                   )}
 
-                  {submission.ai_feedback.improvements && submission.ai_feedback.improvements.length > 0 && (
+                  {submission.ai_evaluation.improvements && submission.ai_evaluation.improvements.length > 0 && (
                     <div className="mb-6">
                       <h3 className="font-semibold text-slate-900 mb-2 flex items-center gap-2">
                         <AlertCircle className="h-5 w-5 text-amber-600" />
                         Areas for Improvement
                       </h3>
                       <ul className="space-y-2">
-                        {submission.ai_feedback.improvements.map((improvement: string, index: number) => (
+                        {submission.ai_evaluation.improvements.map((improvement: string, index: number) => (
                           <li key={index} className="flex items-start gap-2">
                             <span className="text-amber-600 mt-1">•</span>
                             <span className="text-slate-700">{improvement}</span>
@@ -417,11 +418,11 @@ export function Exercise() {
                     </div>
                   )}
 
-                  {submission.ai_feedback.nextSteps && submission.ai_feedback.nextSteps.length > 0 && (
+                  {submission.ai_evaluation.nextSteps && submission.ai_evaluation.nextSteps.length > 0 && (
                     <div>
                       <h3 className="font-semibold text-slate-900 mb-2">Next Steps</h3>
                       <ol className="space-y-2">
-                        {submission.ai_feedback.nextSteps.map((step: string, index: number) => (
+                        {submission.ai_evaluation.nextSteps.map((step: string, index: number) => (
                           <li key={index} className="flex items-start gap-2">
                             <span className="text-blue-600 font-medium">{index + 1}.</span>
                             <span className="text-slate-700">{step}</span>
