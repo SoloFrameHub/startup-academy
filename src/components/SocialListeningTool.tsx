@@ -57,11 +57,12 @@ export function SocialListeningTool() {
         })
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to analyze social conversations');
-      }
-
       const result = await response.json();
+
+      if (!response.ok) {
+        console.error('API response:', result);
+        throw new Error(result.error || result.message || `Request failed with status ${response.status}`);
+      }
 
       if (result.success) {
         setResults(result.analysis);

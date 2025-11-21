@@ -198,9 +198,10 @@ export function Exercise() {
       });
 
       alert('Exercise submitted successfully! AI evaluation in progress...');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting exercise:', error);
-      alert('Failed to submit exercise');
+      const errorMessage = error?.message || error?.toString() || 'Unknown error';
+      alert(`Failed to submit exercise: ${errorMessage}`);
     } finally {
       setSubmitting(false);
     }
